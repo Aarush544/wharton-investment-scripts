@@ -3,6 +3,7 @@ import numpy as np
 
 TIME_STEP = 1/252
 
+# Uses Vasicek Mean Reversion Model
 
 interest_rates = []
 
@@ -46,7 +47,6 @@ final_row = rates_matrix[-1, :]
 expected_rate = final_row.mean()
 
 percentiles = np.percentile(final_row, (5, 95))
-cvar_95 = np.mean(final_row[final_row >= percentiles[1]])
 
 one_yr_rates = rates_matrix[252, :]
 one_yr_var = np.percentile(one_yr_rates, 95)
@@ -54,10 +54,11 @@ one_yr_cvar = np.mean(one_yr_rates[one_yr_rates >= one_yr_var])
 
 
 
-print(f"Average Interest Rate: {expected_rate}")
-print(f"5th Percentile Value: {percentiles[0]}")
-print(f"95th Percentile Value: {percentiles[1]}")
-print(f"10 year CVaR: {cvar_95}")
+print(f"Average Interest Rate: {round(100 * expected_rate, 3)}%")
+print(f"5th Percentile Value: {round(100 * percentiles[0], 3)}%")
+print(f"95th Percentile Value: {round(100 * percentiles[1], 3)}%")
+print(f"1 year 95% VaR: {round(100 * one_yr_var, 3)}%")
+print(f"1 year 95% CVaR: {round(100 * one_yr_cvar, 3)}%")
 
 
 
