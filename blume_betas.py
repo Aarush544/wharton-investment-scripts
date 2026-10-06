@@ -25,6 +25,7 @@ returns = prices.pct_change()
 market_returns = returns['^GSPC']
 stock_returns = returns.drop(columns=['^GSPC'])
 results = []
+inaccurate_results = []
 
 # loop through each stock and clean pairs individually
 for ticker in stock_returns.columns:
@@ -35,12 +36,8 @@ for ticker in stock_returns.columns:
     # drop rows where either this stock or the market has missing data
     combined_clean = combined.dropna()
 
-    # makes sure stock has enough history
-    
-    # if len(combined_clean) < 36:
-    #     continue
 
-  
+    # makes sure stock has enough history, if not adds them to another table
     clean_stock = combined_clean.iloc[:, 0]
     clean_market = combined_clean.iloc[:, 1]
     
@@ -50,18 +47,27 @@ for ticker in stock_returns.columns:
         
     raw_beta = cov / market_var
     blume_beta = (2/3 * raw_beta) + 1/3
+
+    if len(combined_clean) < 59:
+        inaccurate_results.append({
+            "Ticker": ticker,
+            "Raw Beta": round(raw_beta, 3),
+            "Blume Beta": round(blume_beta, 3),
+            "Months Used": len(combined_clean)
+        })
+        continue
     
     results.append({
         "Ticker": ticker, 
         "Raw Beta": round(raw_beta, 3), 
         "Blume Beta": round(blume_beta, 3),
-        "Months Used": len(combined_clean)
     })
 
-
 betas = pd.DataFrame(results)
+inaccurate_betas = pd.DataFrame(inaccurate_results)
 
 print("\n--- Top 10 Rows ---")
 print(betas.head(10))
 
 betas.to_csv("betas.csv", index=False)
+inaccurate_betas.to_csv("inaccurate_betas.csv", index=False)
